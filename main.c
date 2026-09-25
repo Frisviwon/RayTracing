@@ -41,8 +41,6 @@ int main(void) {
 int samples_per_pixel = 100;
 double pixel_samples_scale = 1.0 / samples_per_pixel;
 // ...
-color pixel = v3(0, 0, 0);
-
 
 
 
@@ -81,6 +79,7 @@ color pixel = v3(0, 0, 0);
         fprintf(stderr, "\rFilas restantes: %d ", image_height - j);
         fflush(stderr);
         for (int i = 0; i < image_width; i++) {
+		color pixel = v3(0, 0, 0);
 		for (int s = 0; s < samples_per_pixel; s++) {
 			ray r = get_ray(i, j, pixel100_loc, pixel_delta_u, pixel_delta_v, camera_center);
 			pixel = vec3_add(pixel, ray_color(r, world));

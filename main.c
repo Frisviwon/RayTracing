@@ -6,6 +6,10 @@
 #include "rtweekend.h"
 
 
+
+int max_depth = 50;
+
+
 ray get_ray(int i, int j, point3 pixel100_loc, vec3 pixel_delta_u, vec3 pixel_delta_v, point3 camera_center) {
 
 	double px = random_double() - 0.5;
@@ -19,11 +23,18 @@ ray get_ray(int i, int j, point3 pixel100_loc, vec3 pixel_delta_u, vec3 pixel_de
 }
 
 
-color ray_color(ray r, hittable_list world) {
+color ray_color(ray r, int depth,  hittable_list world) {
+	if (depth <= 0)
+	return v3(0,0,0);
+
     hit_record rec;
-    if (world_hit(world, r, 0.0, INFINITY, &rec)) {
+    if (world_hit(world, r, 0.001, INFINITY, &rec)) {
+	
+	vec3 direction = vec3_add(rec.normal, random_unit_vector());	
+	ray bounced = {rec.p, direction};
+
         // La normal esta en [-1,1]; la mapeamos a un color [0,1]
-        return vec3_scale(vec3_add(rec.normal, v3(1,1,1)), 0.5);
+        return vec3_scale(ray_color(bounced, depth - 1, world),0.5);
     }
     vec3 unit_direction = vec3_unit(r.dir);
     double a = 0.5 * (unit_direction.y + 1.0);
@@ -82,10 +93,11 @@ double pixel_samples_scale = 1.0 / samples_per_pixel;
 		color pixel = v3(0, 0, 0);
 		for (int s = 0; s < samples_per_pixel; s++) {
 			ray r = get_ray(i, j, pixel100_loc, pixel_delta_u, pixel_delta_v, camera_center);
-			pixel = vec3_add(pixel, ray_color(r, world));
+			pixel = vec3_add(pixel, ray_color(r, max_depth,  world));
 	    		}
             		write_color(stdout, vec3_scale(pixel, pixel_samples_scale));
-        }
+
+	    }
     }
     fprintf(stderr, "\r¡Listo!                 \n");
     return 0;

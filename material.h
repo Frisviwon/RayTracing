@@ -20,10 +20,6 @@ typedef struct material {
 	double refraction_index; //dielectrico : indice de refraccion
 } material;
 
-// reflexion especular: reflejo v respecto a la normal n
-static inline vec3 reflect(vec3 v, vec3 n) {
-	return vec3_sub(v, vec3_scale(n, 2*vec3_dot(v,n)));
-}
 
 //scatter: dado un rayo entrante y un impacto, decide el rayo dispersado 
 // y cuanto atenua el color. devuelve 0 si el rayo se absorbe.
@@ -51,13 +47,39 @@ static int scatter(const material *mat, ray r_in, hit_record rec, color *attenua
 		return vec3_dot(scattered->dir, rec.normal) > 0;
 	}
 	
-	case DIELECTRIC:
-		// se completa clase 9
-		return 0;
+	case DIELECTRIC:{
+		*attenuation = v3(1.0,1.0,1.0); //el vidrio no absorbe color
+		//si venimos por fuera , eta/eta = 1/n; si por dentro, n.
+		double ri = rec.front_face ? (1.0 / mat->refraction_index) : mat->refraction_index;
+		vec3 unit_direction = vec3_unit(r_in.dir);
+		double cos_theta = fmin(vec3_dot(vec3_neg(unit_direction), rec.normal), 1.0);
+		double sin_theta = sqrt(1.0 - cos_theta * cos_theta);
+		
+		int cannot_refract = (ri * sin_theta > 1.0); //reflexion total interna
+		vec3 direction;
+		if (cannot_refract || reflectance(cos_theta, ri) > random_double())
+			direction = reflect(unit_direction, rec.normal);
+		else
+			direction = refract(unit_direction, rec.normal, ri);
+		
+		scattered->orig = rec.p;
+		scattered->dir = direction;
+		return 1;
+		
 	}
 	return 0;
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 }
-
+}
 #endif
-		
-			
+
+

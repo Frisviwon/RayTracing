@@ -85,17 +85,18 @@ double pixel_samples_scale = 1.0 / samples_per_pixel;
 	//materiales ( deben sobrevivir a todo los render)
 	material mat_ground = { LAMBERTIAN, v3(0.8, 0.8, 0.0), 0, 0 };
 	material mat_center = { LAMBERTIAN, v3(0.1, 0.2, 0.5), 0, 0 };
-	material mat_left   = { METAL,       v3(0.8, 0.8, 0.8), 0.3, 0 };
-	material mat_right  = { METAL,      v3(0.8, 0.6, 0.2), 1.0, 0 };
-
+	material mat_left   = { DIELECTRIC, v3(0, 0, 0), 0, 1.50 }; //vidrio
+	material mat_right  = { METAL,      v3(0.8, 0.8, 0.8), 0.2, 0 };
+	material mat_bubble = {DIELECTRIC,  v3(0,0,0), 0, 1.0 / 1.50 }; //hueco interior
 
     sphere spheres[] = {
         { v3(0,      -100.5, -1), 100.0, &mat_ground },
         { v3(0,           0, -1.2), 0.5,  &mat_center },
-        { v3(-1,          0, -1),   0.5,   &mat_left },
+        { v3(-1,          0, -1),   0.5,   &mat_left }, //esfera de vidrio
+        { v3(-1,          0, -1),   0.4,  &mat_bubble }, //burbuja dentro ( mismo centro )
         { v3( 1,          0, -1),   0.5, &mat_right },
     };
-    hittable_list world = { spheres, 4 };
+    hittable_list world = { spheres, 5 };
 
     // --- Render ---
     printf("P3\n%d %d\n255\n", image_width, image_height);
@@ -115,3 +116,13 @@ double pixel_samples_scale = 1.0 / samples_per_pixel;
     fprintf(stderr, "\r¡Listo!                 \n");
     return 0;
 }
+
+
+
+
+
+
+
+
+
+
